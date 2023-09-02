@@ -1,0 +1,1714 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Nombre de instancia de Data Factory",
+			"defaultValue": "ETLnrdwnd"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/EstadosFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Territories",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenEST"
+						},
+						{
+							"dataset": {
+								"referenceName": "PaisesORG",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenPais"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "EstadosDST",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoEST"
+						}
+					],
+					"transformations": [
+						{
+							"name": "acoplar"
+						},
+						{
+							"name": "busqueda"
+						},
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Continents as (Continent as (ContinentName as string, Country as (CountryCapital as string, CountryCode as string, CountryName as string, Population as integer, State as ({@type} as string, EnglishRegionName as string, EnglishStateName as string, RegionCode as string, RegionName as string, StateCapital as string, StateCode as string, StateName as string)[], Subdivision as string)[])[])",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     validationMode: 'xsd',",
+						"     namespaces: true) ~> OrigenEST",
+						"source(output(",
+						"          CountryKey as integer,",
+						"          CountryName as string,",
+						"          CountryCode as string,",
+						"          CountryCapital as string,",
+						"          Population as integer,",
+						"          Subdivision as string,",
+						"          ContinentKey as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> OrigenPais",
+						"OrigenEST foldDown(unroll(Continents.Continent.Country.State),",
+						"     mapColumn(",
+						"          CountryName = Continents.Continent.Country.CountryName,",
+						"          StateType = Continents.Continent.Country.State.{@type},",
+						"          EnglishRegionName = Continents.Continent.Country.State.EnglishRegionName,",
+						"          EnglishStateName = Continents.Continent.Country.State.EnglishStateName,",
+						"          RegionCode = Continents.Continent.Country.State.RegionCode,",
+						"          RegionName = Continents.Continent.Country.State.RegionName,",
+						"          StateCapital = Continents.Continent.Country.State.StateCapital,",
+						"          StateCode = Continents.Continent.Country.State.StateCode,",
+						"          StateName = Continents.Continent.Country.State.StateName",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> acoplar",
+						"acoplar, OrigenPais lookup(acoplar@CountryName == OrigenPais@CountryName,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> busqueda",
+						"busqueda derive(StateName = iif(isNull(StateName), \"\", StateName),",
+						"          StateType = iif(isNull(StateType), \"\", StateType)) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          StateKey as integer,",
+						"          StateName as string,",
+						"          EnglishStateName as string,",
+						"          StateType as string,",
+						"          StateCode as string,",
+						"          StateCapital as string,",
+						"          RegionName as string,",
+						"          RegionCode as string,",
+						"          CountryKey as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          StateName,",
+						"          EnglishStateName,",
+						"          StateType,",
+						"          StateCode,",
+						"          StateCapital,",
+						"          RegionName,",
+						"          RegionCode,",
+						"          CountryKey",
+						"     )) ~> DestinoEST"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PaisesFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Territories",
+								"type": "DatasetReference"
+							},
+							"name": "PaisesORG"
+						},
+						{
+							"dataset": {
+								"referenceName": "ContinenteORG",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenCONT"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "PaisesDST",
+								"type": "DatasetReference"
+							},
+							"name": "PaisesDST"
+						}
+					],
+					"transformations": [
+						{
+							"name": "acoplar"
+						},
+						{
+							"name": "busqueda"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Continents as (Continent as (ContinentName as string, Country as (CountryCapital as string, CountryCode as string, CountryName as string, Population as integer, State as ({@type} as string, EnglishRegionName as string, EnglishStateName as string, RegionCode as string, RegionName as string, StateCapital as string, StateCode as string, StateName as string)[], Subdivision as string)[])[])",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     validationMode: 'xsd',",
+						"     namespaces: true) ~> PaisesORG",
+						"source(output(",
+						"          ContinentKey as integer,",
+						"          ContinentName as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> OrigenCONT",
+						"PaisesORG foldDown(unroll(Continents.Continent.Country),",
+						"     mapColumn(",
+						"          ContinentName = Continents.Continent.ContinentName,",
+						"          CountryCapital = Continents.Continent.Country.CountryCapital,",
+						"          CountryCode = Continents.Continent.Country.CountryCode,",
+						"          CountryName = Continents.Continent.Country.CountryName,",
+						"          Population = Continents.Continent.Country.Population,",
+						"          Subdivision = Continents.Continent.Country.Subdivision",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> acoplar",
+						"acoplar, OrigenCONT lookup(acoplar@ContinentName == OrigenCONT@ContinentName,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> busqueda",
+						"busqueda sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          CountryKey as integer,",
+						"          CountryName as string,",
+						"          CountryCode as string,",
+						"          CountryCapital as string,",
+						"          Population as integer,",
+						"          Subdivision as string,",
+						"          ContinentKey as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CountryName,",
+						"          CountryCode,",
+						"          CountryCapital,",
+						"          Population,",
+						"          Subdivision,",
+						"          ContinentKey",
+						"     )) ~> PaisesDST"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProductosFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ProductosORG",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenPRD"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ProductosDST",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoPRD"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          ProductID as integer,",
+						"          ProductName as string,",
+						"          SupplierID as integer,",
+						"          CategoryID as integer,",
+						"          QuantityPerUnit as string,",
+						"          UnitPrice as decimal(19,4),",
+						"          UnitsInStock as integer,",
+						"          UnitsOnOrder as integer,",
+						"          ReorderLevel as integer,",
+						"          Discontinued as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> OrigenPRD",
+						"OrigenPRD sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ProductKey as integer,",
+						"          ProductName as string,",
+						"          QuantityPerUnit as string,",
+						"          UnitPrice as decimal(19,4),",
+						"          Discontinued as boolean,",
+						"          CategoryKey as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          ProductKey = ProductID,",
+						"          ProductName,",
+						"          QuantityPerUnit,",
+						"          UnitPrice,",
+						"          Discontinued,",
+						"          CategoryKey = CategoryID",
+						"     )) ~> DestinoPRD"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProveedorFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ProveedorORG",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenPRO"
+						},
+						{
+							"dataset": {
+								"referenceName": "CiudadesDST",
+								"type": "DatasetReference"
+							},
+							"name": "Ciudades"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ProveedorDST",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoPRO"
+						}
+					],
+					"transformations": [
+						{
+							"name": "BusquedaCityKey"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          SupplierID as integer,",
+						"          CompanyName as string,",
+						"          ContactName as string,",
+						"          ContactTitle as string,",
+						"          Address as string,",
+						"          City as string,",
+						"          Region as string,",
+						"          PostalCode as string,",
+						"          Country as string,",
+						"          Phone as string,",
+						"          Fax as string,",
+						"          HomePage as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> OrigenPRO",
+						"source(output(",
+						"          CityKey as integer,",
+						"          CityName as string,",
+						"          StateKey as integer,",
+						"          CountryKey as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Ciudades",
+						"OrigenPRO, Ciudades lookup(City == CityName,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> BusquedaCityKey",
+						"BusquedaCityKey sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          SupplierKey as integer,",
+						"          CompanyName as string,",
+						"          Address as string,",
+						"          PostalCode as string,",
+						"          CityKey as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          SupplierKey = SupplierID,",
+						"          CompanyName,",
+						"          Address,",
+						"          PostalCode,",
+						"          CityKey",
+						"     )) ~> DestinoPRO"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TempFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Cities",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenCIU"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "CiudadesTEMP",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoCIU"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          City as string,",
+						"          State as string,",
+						"          Country as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> OrigenCIU",
+						"OrigenCIU sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          City as string,",
+						"          State as string,",
+						"          Country as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          City,",
+						"          State,",
+						"          Country",
+						"     )) ~> DestinoCIU"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TerritoriesFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TerritoriesORG",
+								"type": "DatasetReference"
+							},
+							"name": "Territories"
+						},
+						{
+							"dataset": {
+								"referenceName": "EmployeeTerritories",
+								"type": "DatasetReference"
+							},
+							"name": "EmployeeTerritories"
+						},
+						{
+							"dataset": {
+								"referenceName": "CiudadesDST",
+								"type": "DatasetReference"
+							},
+							"name": "Ciudades"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TerritorioDST",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoTerritorio"
+						},
+						{
+							"dataset": {
+								"referenceName": "SalidaCSV",
+								"type": "DatasetReference"
+							},
+							"name": "CSV"
+						}
+					],
+					"transformations": [
+						{
+							"name": "TerritoryID"
+						},
+						{
+							"name": "TerritoryID1"
+						},
+						{
+							"name": "InnerJoin"
+						},
+						{
+							"name": "EmployeeIDTerritoryDesc"
+						},
+						{
+							"name": "EliminarEspacios"
+						},
+						{
+							"name": "BusquedaCiudad"
+						},
+						{
+							"name": "split1"
+						},
+						{
+							"name": "EmployeeID"
+						},
+						{
+							"name": "EliminarDuplicadas"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          TerritoryID as string,",
+						"          TerritoryDescription as string,",
+						"          RegionID as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Territories",
+						"source(output(",
+						"          EmployeeID as integer,",
+						"          TerritoryID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> EmployeeTerritories",
+						"source(output(",
+						"          CityKey as integer,",
+						"          CityName as string,",
+						"          StateKey as integer,",
+						"          CountryKey as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Ciudades",
+						"Territories sort(asc(TerritoryID, true)) ~> TerritoryID",
+						"EmployeeTerritories sort(asc(TerritoryID, true)) ~> TerritoryID1",
+						"TerritoryID, TerritoryID1 join(Territories@TerritoryID == EmployeeTerritories@TerritoryID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> InnerJoin",
+						"InnerJoin select(mapColumn(",
+						"          TerritoryDescription,",
+						"          EmployeeID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> EmployeeIDTerritoryDesc",
+						"EmployeeIDTerritoryDesc derive(TerritoryDescription = trim(TerritoryDescription)) ~> EliminarEspacios",
+						"EliminarEspacios, Ciudades lookup(TerritoryDescription == CityName,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> BusquedaCiudad",
+						"BusquedaCiudad split(!isNull(CityName) && CityName != \"\",",
+						"     disjoint: false) ~> split1@(Existe, NoExiste)",
+						"split1@Existe sort(asc(EmployeeID, true)) ~> EmployeeID",
+						"EmployeeID aggregate(groupBy(EmployeeID),",
+						"     each(match(name!='EmployeeID'), $$ = first($$))) ~> EliminarDuplicadas",
+						"EliminarDuplicadas sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          EmployeeKey as integer,",
+						"          CityKey as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          EmployeeKey = EmployeeID,",
+						"          CityKey",
+						"     )) ~> DestinoTerritorio",
+						"split1@NoExiste sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> CSV"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TiempoFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TiempoORG",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenTiempo"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TiempoDST",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoTiempo"
+						}
+					],
+					"transformations": [
+						{
+							"name": "ConversorTiempo"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          DateAltKey as string,",
+						"          DayNbWeek as string,",
+						"          DayNameWeek as string,",
+						"          DayNbMonth as string,",
+						"          DayNbYear as string,",
+						"          WeekNbYear as string,",
+						"          MonthNumber as string,",
+						"          MonthName as string,",
+						"          Quarter as string,",
+						"          Semester as string,",
+						"          Year as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> OrigenTiempo",
+						"OrigenTiempo cast(output(",
+						"          DateAltKey as date,",
+						"          DayNbWeek as integer,",
+						"          DayNameWeek as string,",
+						"          DayNbMonth as integer,",
+						"          DayNbYear as integer,",
+						"          WeekNbYear as integer,",
+						"          MonthNumber as integer,",
+						"          MonthName as string,",
+						"          Quarter as integer,",
+						"          Semester as integer,",
+						"          Year as integer",
+						"     ),",
+						"     errors: true) ~> ConversorTiempo",
+						"ConversorTiempo sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          TimeKey as integer,",
+						"          Date as date,",
+						"          DayNbWeek as integer,",
+						"          DayNameWeek as string,",
+						"          DayNbMonth as integer,",
+						"          DayNbYear as integer,",
+						"          WeekNbYear as integer,",
+						"          MonthNumber as integer,",
+						"          MonthName as string,",
+						"          Quarter as integer,",
+						"          Semester as integer,",
+						"          Year as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          Date = DateAltKey,",
+						"          DayNbWeek,",
+						"          DayNameWeek,",
+						"          DayNbMonth,",
+						"          DayNbYear,",
+						"          WeekNbYear,",
+						"          MonthNumber,",
+						"          MonthName,",
+						"          Quarter,",
+						"          Semester,",
+						"          Year",
+						"     )) ~> DestinoTiempo"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TransportistaFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TransportistaORG",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenTRS"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "TransportistaDST",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoTRS"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          ShipperID as integer,",
+						"          CompanyName as string,",
+						"          Phone as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> OrigenTRS",
+						"OrigenTRS sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ShipperKey as integer,",
+						"          CompanyName as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          ShipperKey = ShipperID,",
+						"          CompanyName",
+						"     )) ~> DestinoTRS"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/VentasFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "VentasORG",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenVentas"
+						},
+						{
+							"dataset": {
+								"referenceName": "ProductosORG",
+								"type": "DatasetReference"
+							},
+							"name": "Product"
+						},
+						{
+							"dataset": {
+								"referenceName": "TiempoDST",
+								"type": "DatasetReference"
+							},
+							"name": "Tiempo"
+						},
+						{
+							"dataset": {
+								"referenceName": "VentasSpec",
+								"type": "DatasetReference"
+							},
+							"name": "SalesDetails"
+						},
+						{
+							"dataset": {
+								"referenceName": "ClienteDST",
+								"type": "DatasetReference"
+							},
+							"name": "Clientes"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "VentasDST",
+								"type": "DatasetReference"
+							},
+							"name": "Sales"
+						}
+					],
+					"transformations": [
+						{
+							"name": "DetallesProductos"
+						},
+						{
+							"name": "cast1"
+						},
+						{
+							"name": "OrderDate"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "RequiredDate"
+						},
+						{
+							"name": "select2"
+						},
+						{
+							"name": "ShippedDate"
+						},
+						{
+							"name": "select3"
+						},
+						{
+							"name": "join2"
+						},
+						{
+							"name": "select4"
+						},
+						{
+							"name": "BusquedaClientes"
+						},
+						{
+							"name": "select5"
+						},
+						{
+							"name": "SalesAmount"
+						},
+						{
+							"name": "OrderLineNo"
+						},
+						{
+							"name": "split1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          OrderID as integer,",
+						"          CustomerID as string,",
+						"          EmployeeID as integer,",
+						"          OrderDate as timestamp,",
+						"          RequiredDate as timestamp,",
+						"          ShippedDate as timestamp,",
+						"          ShipVia as integer,",
+						"          Freight as decimal(19,4),",
+						"          ShipName as string,",
+						"          ShipAddress as string,",
+						"          ShipCity as string,",
+						"          ShipRegion as string,",
+						"          ShipPostalCode as string,",
+						"          ShipCountry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> OrigenVentas",
+						"source(output(",
+						"          ProductID as integer,",
+						"          ProductName as string,",
+						"          SupplierID as integer,",
+						"          CategoryID as integer,",
+						"          QuantityPerUnit as string,",
+						"          UnitPrice as decimal(19,4),",
+						"          UnitsInStock as integer,",
+						"          UnitsOnOrder as integer,",
+						"          ReorderLevel as integer,",
+						"          Discontinued as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Product",
+						"source(output(",
+						"          TimeKey as integer,",
+						"          Date as date,",
+						"          DayNbWeek as integer,",
+						"          DayNameWeek as string,",
+						"          DayNbMonth as integer,",
+						"          DayNbYear as integer,",
+						"          WeekNbYear as integer,",
+						"          MonthNumber as integer,",
+						"          MonthName as string,",
+						"          Quarter as integer,",
+						"          Semester as integer,",
+						"          Year as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Tiempo",
+						"source(output(",
+						"          OrderID as integer,",
+						"          ProductID as integer,",
+						"          UnitPrice as decimal(19,4),",
+						"          Quantity as integer,",
+						"          Discount as float",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> SalesDetails",
+						"source(output(",
+						"          CustomerKey as integer,",
+						"          CustomerID as string,",
+						"          CompanyName as string,",
+						"          Address as string,",
+						"          PostalCode as string,",
+						"          CityKey as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Clientes",
+						"SalesDetails, Product join(SalesDetails@ProductID == Product@ProductID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> DetallesProductos",
+						"OrigenVentas cast(output(",
+						"          OrderDate as date,",
+						"          RequiredDate as date,",
+						"          ShippedDate as date",
+						"     ),",
+						"     errors: true) ~> cast1",
+						"cast1, Tiempo lookup(OrderDate == Date,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> OrderDate",
+						"OrderDate select(mapColumn(",
+						"          OrderID,",
+						"          CustomerID,",
+						"          EmployeeID,",
+						"          RequiredDate,",
+						"          ShippedDate,",
+						"          ShipVia,",
+						"          Freight,",
+						"          ShipName,",
+						"          ShipAddress,",
+						"          ShipCity,",
+						"          ShipRegion,",
+						"          ShipPostalCode,",
+						"          ShipCountry,",
+						"          OrderDateKey = TimeKey",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1, Tiempo lookup(RequiredDate == Date,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> RequiredDate",
+						"RequiredDate select(mapColumn(",
+						"          OrderID,",
+						"          CustomerID,",
+						"          EmployeeID,",
+						"          ShippedDate,",
+						"          ShipVia,",
+						"          Freight,",
+						"          ShipName,",
+						"          ShipAddress,",
+						"          ShipCity,",
+						"          ShipRegion,",
+						"          ShipPostalCode,",
+						"          ShipCountry,",
+						"          OrderDateKey,",
+						"          RequiredDateKey = TimeKey",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select2",
+						"select2, Tiempo lookup(ShippedDate == Date,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> ShippedDate",
+						"ShippedDate select(mapColumn(",
+						"          OrderID,",
+						"          CustomerID,",
+						"          EmployeeID,",
+						"          ShipVia,",
+						"          Freight,",
+						"          OrderDateKey,",
+						"          RequiredDateKey,",
+						"          ShippedDateKey = TimeKey",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select3",
+						"select3, DetallesProductos join(select3@OrderID == SalesDetails@OrderID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join2",
+						"join2 select(mapColumn(",
+						"          OrderID = select3@OrderID,",
+						"          CustomerID,",
+						"          EmployeeID,",
+						"          ShipVia,",
+						"          Freight,",
+						"          OrderDateKey,",
+						"          RequiredDateKey,",
+						"          ShippedDateKey,",
+						"          OrderID = SalesDetails@OrderID,",
+						"          ProductID = SalesDetails@ProductID,",
+						"          UnitPrice = SalesDetails@UnitPrice,",
+						"          Quantity,",
+						"          Discount,",
+						"          SupplierID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select4",
+						"select4, Clientes lookup(select4@CustomerID == Clientes@CustomerID,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> BusquedaClientes",
+						"BusquedaClientes select(mapColumn(",
+						"          OrderID,",
+						"          EmployeeID,",
+						"          ShipVia,",
+						"          Freight,",
+						"          OrderDateKey,",
+						"          RequiredDateKey,",
+						"          ShippedDateKey,",
+						"          ProductID,",
+						"          UnitPrice,",
+						"          Quantity,",
+						"          Discount,",
+						"          SupplierID,",
+						"          CustomerKey,",
+						"          ShipVia",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select5",
+						"select5 derive(SalesAmount = UnitPrice*Quantity*(1-Discount)) ~> SalesAmount",
+						"split1@Existe window(over(OrderID),",
+						"     asc(OrderID, true),",
+						"     OrderLineNo = rowNumber()) ~> OrderLineNo",
+						"SalesAmount split(!isNull(ShippedDateKey),",
+						"     disjoint: false) ~> split1@(Existe, NoExiste)",
+						"OrderLineNo sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          CustomerKey as integer,",
+						"          EmployeeKey as integer,",
+						"          OrderDateKey as integer,",
+						"          DueDateKey as integer,",
+						"          ShippedDateKey as integer,",
+						"          ShipperKey as integer,",
+						"          ProductKey as integer,",
+						"          SupplierKey as integer,",
+						"          OrderNo as integer,",
+						"          OrderLineNo as integer,",
+						"          UnitPrice as decimal(19,4),",
+						"          Quantity as integer,",
+						"          Discount as float,",
+						"          SalesAmount as decimal(19,4),",
+						"          Freight as decimal(19,4)",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CustomerKey,",
+						"          EmployeeKey = EmployeeID,",
+						"          OrderDateKey,",
+						"          DueDateKey = RequiredDateKey,",
+						"          ShippedDateKey,",
+						"          ShipperKey = ShipVia,",
+						"          ProductKey = ProductID,",
+						"          SupplierKey = SupplierID,",
+						"          OrderNo = OrderID,",
+						"          OrderLineNo,",
+						"          UnitPrice,",
+						"          Quantity,",
+						"          Discount,",
+						"          SalesAmount,",
+						"          Freight",
+						"     )) ~> Sales"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ETL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Borrado",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[Borrar]"
+						},
+						"linkedServiceName": {
+							"referenceName": "NorthwindDW",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Carga Categorias",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Borrado",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CategoriaFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"OrigenCAT": {},
+									"DestinoCAT": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Productos",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Carga Categorias",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "ProductosFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"OrigenPRD": {},
+									"DestinoPRD": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Empleados",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Borrado",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "EmpleadoFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"OrigenEMP": {},
+									"DestinoEMP": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Transportista",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Borrado",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "TransportistaFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"OrigenTRS": {},
+									"DestinoTRS": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Tiempo",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Borrado",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "TiempoFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"OrigenTiempo": {},
+									"DestinoTiempo": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Continentes",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Borrado",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "ContinenteFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"OrigenCONT": {},
+									"DestinoCONT": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Paises",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Carga Continentes",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "PaisesFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"PaisesORG": {},
+									"OrigenCONT": {},
+									"PaisesDST": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Estados",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Carga Paises",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "EstadosFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"OrigenEST": {},
+									"OrigenPais": {},
+									"DestinoEST": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Ciudades",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Carga Estados",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "CiudadesFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"TempCities": {},
+									"Estados": {},
+									"Paises": {},
+									"Ciudades": {},
+									"CSV": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Cliente",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Carga Ciudades",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "ClienteFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"OrigenCLI": {},
+									"Ciudades": {},
+									"DestinoCLI": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Proveedores",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Carga Ciudades",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "ProveedorFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"OrigenPRO": {},
+									"Ciudades": {},
+									"DestinoPRO": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Territorio",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Carga Ciudades",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Empleados",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "TerritoriesFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"Territories": {},
+									"EmployeeTerritories": {},
+									"Ciudades": {},
+									"DestinoTerritorio": {},
+									"CSV": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Carga Ventas",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Carga Cliente",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Proveedores",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Tiempo",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Transportista",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Territorio",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "Carga Productos",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "VentasFLOW",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"OrigenVentas": {},
+									"Product": {},
+									"Tiempo": {},
+									"SalesDetails": {},
+									"Clientes": {},
+									"Sales": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-08-26T18:11:22Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/ProductosFLOW')]",
+				"[concat(variables('factoryId'), '/dataflows/TransportistaFLOW')]",
+				"[concat(variables('factoryId'), '/dataflows/TiempoFLOW')]",
+				"[concat(variables('factoryId'), '/dataflows/PaisesFLOW')]",
+				"[concat(variables('factoryId'), '/dataflows/EstadosFLOW')]",
+				"[concat(variables('factoryId'), '/dataflows/ProveedorFLOW')]",
+				"[concat(variables('factoryId'), '/dataflows/TerritoriesFLOW')]",
+				"[concat(variables('factoryId'), '/dataflows/VentasFLOW')]"
+			]
+		}
+	]
+}

@@ -1,0 +1,1330 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Nombre de instancia de Data Factory",
+			"defaultValue": "ETLnrdwnd"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ProductosDST')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NorthwindDW",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ProductKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "QuantityPerUnit",
+						"type": "nvarchar"
+					},
+					{
+						"name": "UnitPrice",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "Discontinued",
+						"type": "bit"
+					},
+					{
+						"name": "CategoryKey",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Product"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProductosORG')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NORTHWND",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "SupplierID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CategoryID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "QuantityPerUnit",
+						"type": "nvarchar"
+					},
+					{
+						"name": "UnitPrice",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "UnitsInStock",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "UnitsOnOrder",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "ReorderLevel",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "Discontinued",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Products"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProveedorDST')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NorthwindDW",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "SupplierKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CompanyName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Address",
+						"type": "nvarchar"
+					},
+					{
+						"name": "PostalCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "CityKey",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Supplier"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ProveedorORG')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NORTHWND",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "SupplierID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CompanyName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ContactName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ContactTitle",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Address",
+						"type": "nvarchar"
+					},
+					{
+						"name": "City",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Region",
+						"type": "nvarchar"
+					},
+					{
+						"name": "PostalCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Country",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Phone",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Fax",
+						"type": "nvarchar"
+					},
+					{
+						"name": "HomePage",
+						"type": "ntext"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Suppliers"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SalidaCSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ArchivosETL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "salida1"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Territories')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ArchivosETL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Xml",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Territories.xml",
+						"container": "dimensiones"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TerritoriesORG')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NORTHWND",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TerritoryID",
+						"type": "nvarchar"
+					},
+					{
+						"name": "TerritoryDescription",
+						"type": "nchar"
+					},
+					{
+						"name": "RegionID",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Territories"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TerritorioDST')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NorthwindDW",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "EmployeeKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CityKey",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Territories"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TiempoDST')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NorthwindDW",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "TimeKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Date",
+						"type": "date"
+					},
+					{
+						"name": "DayNbWeek",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "DayNameWeek",
+						"type": "nvarchar"
+					},
+					{
+						"name": "DayNbMonth",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "DayNbYear",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "WeekNbYear",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "MonthNumber",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "MonthName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Quarter",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "Semester",
+						"type": "tinyint",
+						"precision": 3
+					},
+					{
+						"name": "Year",
+						"type": "smallint",
+						"precision": 5
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Time"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TiempoORG')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ArchivosETL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Excel",
+				"typeProperties": {
+					"sheetName": "Feuil1",
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Time.xls",
+						"container": "dimensiones"
+					},
+					"firstRowAsHeader": true
+				},
+				"schema": [
+					{
+						"name": "DateAltKey",
+						"type": "String"
+					},
+					{
+						"name": "DayNbWeek",
+						"type": "String"
+					},
+					{
+						"name": "DayNameWeek",
+						"type": "String"
+					},
+					{
+						"name": "DayNbMonth",
+						"type": "String"
+					},
+					{
+						"name": "DayNbYear",
+						"type": "String"
+					},
+					{
+						"name": "WeekNbYear",
+						"type": "String"
+					},
+					{
+						"name": "MonthNumber",
+						"type": "String"
+					},
+					{
+						"name": "MonthName",
+						"type": "String"
+					},
+					{
+						"name": "Quarter",
+						"type": "String"
+					},
+					{
+						"name": "Semester",
+						"type": "String"
+					},
+					{
+						"name": "Year",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TransportistaDST')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NorthwindDW",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ShipperKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CompanyName",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Shipper"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TransportistaORG')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NORTHWND",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ShipperID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CompanyName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Phone",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Shippers"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/VentasDST')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NorthwindDW",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "CustomerKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "EmployeeKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "OrderDateKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DueDateKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ShippedDateKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ShipperKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SupplierKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "OrderNo",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "OrderLineNo",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "UnitPrice",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "Quantity",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "Discount",
+						"type": "real",
+						"precision": 7
+					},
+					{
+						"name": "SalesAmount",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "Freight",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Sales"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/VentasORG')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NORTHWND",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "OrderID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CustomerID",
+						"type": "nchar"
+					},
+					{
+						"name": "EmployeeID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "OrderDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "RequiredDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ShippedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ShipVia",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Freight",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "ShipName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ShipAddress",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ShipCity",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ShipRegion",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ShipPostalCode",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ShipCountry",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Orders"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/VentasSpec')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "NORTHWND",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "OrderID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "UnitPrice",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "Quantity",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "Discount",
+						"type": "real",
+						"precision": 7
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Order Details"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CategoriaFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "CategoriasORG",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenCAT"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "CategoriasDST",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoCAT"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          CategoryID as integer,",
+						"          CategoryName as string,",
+						"          Description as string,",
+						"          Picture as binary",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> OrigenCAT",
+						"OrigenCAT sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          CategoryKey as integer,",
+						"          CategoryName as string,",
+						"          Description as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CategoryKey = CategoryID,",
+						"          CategoryName,",
+						"          Description",
+						"     )) ~> DestinoCAT"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CiudadesFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "CiudadesTEMP",
+								"type": "DatasetReference"
+							},
+							"name": "TempCities"
+						},
+						{
+							"dataset": {
+								"referenceName": "EstadosDST",
+								"type": "DatasetReference"
+							},
+							"name": "Estados"
+						},
+						{
+							"dataset": {
+								"referenceName": "PaisesDST",
+								"type": "DatasetReference"
+							},
+							"name": "Paises"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "CiudadesDST",
+								"type": "DatasetReference"
+							},
+							"name": "Ciudades"
+						},
+						{
+							"dataset": {
+								"referenceName": "SalidaCSV",
+								"type": "DatasetReference"
+							},
+							"name": "CSV"
+						}
+					],
+					"transformations": [
+						{
+							"name": "EstadosPaises"
+						},
+						{
+							"name": "split1"
+						},
+						{
+							"name": "SeleccionamosAtributos"
+						},
+						{
+							"name": "PaisNombre"
+						},
+						{
+							"name": "StateNameCountryName"
+						},
+						{
+							"name": "split2"
+						},
+						{
+							"name": "EnglishCountryName"
+						},
+						{
+							"name": "Atributos"
+						},
+						{
+							"name": "split3"
+						},
+						{
+							"name": "Atributos1"
+						},
+						{
+							"name": "StateNameCode"
+						},
+						{
+							"name": "split4"
+						},
+						{
+							"name": "UnionTodas"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          City as string,",
+						"          State as string,",
+						"          Country as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> TempCities",
+						"source(output(",
+						"          StateKey as integer,",
+						"          StateName as string,",
+						"          EnglishStateName as string,",
+						"          StateType as string,",
+						"          StateCode as string,",
+						"          StateCapital as string,",
+						"          RegionName as string,",
+						"          RegionCode as string,",
+						"          CountryKey as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Estados",
+						"source(output(",
+						"          CountryKey as integer,",
+						"          CountryName as string,",
+						"          CountryCode as string,",
+						"          CountryCapital as string,",
+						"          Population as integer,",
+						"          Subdivision as string,",
+						"          ContinentKey as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Paises",
+						"Estados, Paises lookup(Estados@CountryKey == Paises@CountryKey,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> EstadosPaises",
+						"TempCities split(isNull(State) || State == \"\",",
+						"     disjoint: false) ~> split1@(SinEstado, ConEstado)",
+						"EstadosPaises select(mapColumn(",
+						"          StateKey,",
+						"          StateName,",
+						"          EnglishStateName,",
+						"          CountryKey = Paises@CountryKey,",
+						"          CountryName,",
+						"          CountryCode",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> SeleccionamosAtributos",
+						"split1@SinEstado, SeleccionamosAtributos lookup(Country == CountryName,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> PaisNombre",
+						"split1@ConEstado, SeleccionamosAtributos lookup(State == StateName",
+						"     && Country == CountryName,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> StateNameCountryName",
+						"StateNameCountryName split(!isNull(StateName) && StateName != \"\" && !isNull(CountryName) && CountryName != \"\",",
+						"     disjoint: false) ~> split2@(Coincide, NoCoincide)",
+						"Atributos, SeleccionamosAtributos lookup(State == EnglishStateName",
+						"     && Country == CountryName,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> EnglishCountryName",
+						"split2@NoCoincide select(mapColumn(",
+						"          City,",
+						"          State,",
+						"          Country",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> Atributos",
+						"EnglishCountryName split(!isNull(EnglishStateName) && EnglishStateName != \"\" && !isNull(CountryName) && CountryName != \"\",",
+						"     disjoint: false) ~> split3@(Existe, NoExiste)",
+						"split3@NoExiste select(mapColumn(",
+						"          City,",
+						"          State,",
+						"          Country",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> Atributos1",
+						"Atributos1, SeleccionamosAtributos lookup(State == StateName",
+						"     && Country == CountryCode,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> StateNameCode",
+						"StateNameCode split(!isNull(StateName) && StateName != \"\" && !isNull(CountryCode) && CountryCode != \"\",",
+						"     disjoint: false) ~> split4@(Sirve, NoSirve)",
+						"PaisNombre, split2@Coincide, split3@Existe, split4@Sirve union(byName: true)~> UnionTodas",
+						"UnionTodas sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          CityKey as integer,",
+						"          CityName as string,",
+						"          StateKey as integer,",
+						"          CountryKey as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CityName = City,",
+						"          StateKey,",
+						"          CountryKey",
+						"     )) ~> Ciudades",
+						"split4@NoSirve sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> CSV"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SalidaCSV')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ClienteFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ClienteORG",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenCLI"
+						},
+						{
+							"dataset": {
+								"referenceName": "CiudadesDST",
+								"type": "DatasetReference"
+							},
+							"name": "Ciudades"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ClienteDST",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoCLI"
+						}
+					],
+					"transformations": [
+						{
+							"name": "BusquedaCityKey"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustomerID as string,",
+						"          CompanyName as string,",
+						"          ContactName as string,",
+						"          ContactTitle as string,",
+						"          Address as string,",
+						"          City as string,",
+						"          Region as string,",
+						"          PostalCode as string,",
+						"          Country as string,",
+						"          Phone as string,",
+						"          Fax as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> OrigenCLI",
+						"source(output(",
+						"          CityKey as integer,",
+						"          CityName as string,",
+						"          StateKey as integer,",
+						"          CountryKey as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Ciudades",
+						"OrigenCLI, Ciudades lookup(City == CityName,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> BusquedaCityKey",
+						"BusquedaCityKey sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          CustomerKey as integer,",
+						"          CustomerID as string,",
+						"          CompanyName as string,",
+						"          Address as string,",
+						"          PostalCode as string,",
+						"          CityKey as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CustomerID,",
+						"          CompanyName,",
+						"          Address,",
+						"          PostalCode,",
+						"          CityKey",
+						"     )) ~> DestinoCLI"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ContinenteFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Territories",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenCONT"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ContinentesDST",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoCONT"
+						}
+					],
+					"transformations": [
+						{
+							"name": "acoplar"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Continents as (Continent as (ContinentName as string, Country as (CountryCapital as string, CountryCode as string, CountryName as string, Population as integer, State as ({@type} as string, EnglishRegionName as string, EnglishStateName as string, RegionCode as string, RegionName as string, StateCapital as string, StateCode as string, StateName as string)[], Subdivision as string)[])[])",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     validationMode: 'xsd',",
+						"     namespaces: true) ~> OrigenCONT",
+						"OrigenCONT foldDown(unroll(Continents.Continent),",
+						"     mapColumn(",
+						"          Continents = Continents.Continent.ContinentName",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> acoplar",
+						"acoplar sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ContinentKey as integer,",
+						"          ContinentName as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          ContinentName = Continents",
+						"     )) ~> DestinoCONT"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Territories')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/EmpleadoFLOW')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmpleadoORG",
+								"type": "DatasetReference"
+							},
+							"name": "OrigenEMP"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "EmpleadoDST",
+								"type": "DatasetReference"
+							},
+							"name": "DestinoEMP"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          EmployeeID as integer,",
+						"          LastName as string,",
+						"          FirstName as string,",
+						"          Title as string,",
+						"          TitleOfCourtesy as string,",
+						"          BirthDate as timestamp,",
+						"          HireDate as timestamp,",
+						"          Address as string,",
+						"          City as string,",
+						"          Region as string,",
+						"          PostalCode as string,",
+						"          Country as string,",
+						"          HomePhone as string,",
+						"          Extension as string,",
+						"          Photo as binary,",
+						"          Notes as string,",
+						"          ReportsTo as integer,",
+						"          PhotoPath as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> OrigenEMP",
+						"OrigenEMP sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          EmployeeKey as integer,",
+						"          FirstName as string,",
+						"          LastName as string,",
+						"          Title as string,",
+						"          TitleOfCourtesy as string,",
+						"          BirthDate as date,",
+						"          HireDate as date,",
+						"          Address as string,",
+						"          City as string,",
+						"          Region as string,",
+						"          PostalCode as string,",
+						"          Country as string,",
+						"          SupervisorKey as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          EmployeeKey = EmployeeID,",
+						"          FirstName,",
+						"          LastName,",
+						"          Title,",
+						"          TitleOfCourtesy,",
+						"          BirthDate,",
+						"          HireDate,",
+						"          Address,",
+						"          City,",
+						"          Region,",
+						"          PostalCode,",
+						"          Country,",
+						"          SupervisorKey = ReportsTo",
+						"     )) ~> DestinoEMP"
+					]
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
