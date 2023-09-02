@@ -1,0 +1,19 @@
+{
+	"name": "Territories",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ArchivosETL",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Xml",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Territories.xml",
+				"container": "dimensiones"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

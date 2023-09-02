@@ -1,0 +1,100 @@
+{
+	"name": "TiempoFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TiempoORG",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenTiempo"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TiempoDST",
+						"type": "DatasetReference"
+					},
+					"name": "DestinoTiempo"
+				}
+			],
+			"transformations": [
+				{
+					"name": "ConversorTiempo"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          DateAltKey as string,",
+				"          DayNbWeek as string,",
+				"          DayNameWeek as string,",
+				"          DayNbMonth as string,",
+				"          DayNbYear as string,",
+				"          WeekNbYear as string,",
+				"          MonthNumber as string,",
+				"          MonthName as string,",
+				"          Quarter as string,",
+				"          Semester as string,",
+				"          Year as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> OrigenTiempo",
+				"OrigenTiempo cast(output(",
+				"          DateAltKey as date,",
+				"          DayNbWeek as integer,",
+				"          DayNameWeek as string,",
+				"          DayNbMonth as integer,",
+				"          DayNbYear as integer,",
+				"          WeekNbYear as integer,",
+				"          MonthNumber as integer,",
+				"          MonthName as string,",
+				"          Quarter as integer,",
+				"          Semester as integer,",
+				"          Year as integer",
+				"     ),",
+				"     errors: true) ~> ConversorTiempo",
+				"ConversorTiempo sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          TimeKey as integer,",
+				"          Date as date,",
+				"          DayNbWeek as integer,",
+				"          DayNameWeek as string,",
+				"          DayNbMonth as integer,",
+				"          DayNbYear as integer,",
+				"          WeekNbYear as integer,",
+				"          MonthNumber as integer,",
+				"          MonthName as string,",
+				"          Quarter as integer,",
+				"          Semester as integer,",
+				"          Year as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          Date = DateAltKey,",
+				"          DayNbWeek,",
+				"          DayNameWeek,",
+				"          DayNbMonth,",
+				"          DayNbYear,",
+				"          WeekNbYear,",
+				"          MonthNumber,",
+				"          MonthName,",
+				"          Quarter,",
+				"          Semester,",
+				"          Year",
+				"     )) ~> DestinoTiempo"
+			]
+		}
+	}
+}

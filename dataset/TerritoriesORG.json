@@ -1,0 +1,31 @@
+{
+	"name": "TerritoriesORG",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "NORTHWND",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TerritoryID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "TerritoryDescription",
+				"type": "nchar"
+			},
+			{
+				"name": "RegionID",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Territories"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

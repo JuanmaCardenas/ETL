@@ -1,0 +1,49 @@
+{
+	"name": "PaisesDST",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "NorthwindDW",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "CountryKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CountryName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "CountryCode",
+				"type": "nvarchar"
+			},
+			{
+				"name": "CountryCapital",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Population",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Subdivision",
+				"type": "ntext"
+			},
+			{
+				"name": "ContinentKey",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Country"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

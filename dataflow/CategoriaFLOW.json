@@ -1,0 +1,59 @@
+{
+	"name": "CategoriaFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "CategoriasORG",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenCAT"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "CategoriasDST",
+						"type": "DatasetReference"
+					},
+					"name": "DestinoCAT"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          CategoryID as integer,",
+				"          CategoryName as string,",
+				"          Description as string,",
+				"          Picture as binary",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OrigenCAT",
+				"OrigenCAT sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          CategoryKey as integer,",
+				"          CategoryName as string,",
+				"          Description as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CategoryKey = CategoryID,",
+				"          CategoryName,",
+				"          Description",
+				"     )) ~> DestinoCAT"
+			]
+		}
+	}
+}

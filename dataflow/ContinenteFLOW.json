@@ -1,0 +1,64 @@
+{
+	"name": "ContinenteFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Territories",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenCONT"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ContinentesDST",
+						"type": "DatasetReference"
+					},
+					"name": "DestinoCONT"
+				}
+			],
+			"transformations": [
+				{
+					"name": "acoplar"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Continents as (Continent as (ContinentName as string, Country as (CountryCapital as string, CountryCode as string, CountryName as string, Population as integer, State as ({@type} as string, EnglishRegionName as string, EnglishStateName as string, RegionCode as string, RegionName as string, StateCapital as string, StateCode as string, StateName as string)[], Subdivision as string)[])[])",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     validationMode: 'xsd',",
+				"     namespaces: true) ~> OrigenCONT",
+				"OrigenCONT foldDown(unroll(Continents.Continent),",
+				"     mapColumn(",
+				"          Continents = Continents.Continent.ContinentName",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> acoplar",
+				"acoplar sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ContinentKey as integer,",
+				"          ContinentName as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ContinentName = Continents",
+				"     )) ~> DestinoCONT"
+			]
+		}
+	}
+}

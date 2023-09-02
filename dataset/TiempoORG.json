@@ -1,0 +1,67 @@
+{
+	"name": "TiempoORG",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ArchivosETL",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Feuil1",
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Time.xls",
+				"container": "dimensiones"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": [
+			{
+				"name": "DateAltKey",
+				"type": "String"
+			},
+			{
+				"name": "DayNbWeek",
+				"type": "String"
+			},
+			{
+				"name": "DayNameWeek",
+				"type": "String"
+			},
+			{
+				"name": "DayNbMonth",
+				"type": "String"
+			},
+			{
+				"name": "DayNbYear",
+				"type": "String"
+			},
+			{
+				"name": "WeekNbYear",
+				"type": "String"
+			},
+			{
+				"name": "MonthNumber",
+				"type": "String"
+			},
+			{
+				"name": "MonthName",
+				"type": "String"
+			},
+			{
+				"name": "Quarter",
+				"type": "String"
+			},
+			{
+				"name": "Semester",
+				"type": "String"
+			},
+			{
+				"name": "Year",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,75 @@
+{
+	"name": "TiempoDST",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "NorthwindDW",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "TimeKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Date",
+				"type": "date"
+			},
+			{
+				"name": "DayNbWeek",
+				"type": "tinyint",
+				"precision": 3
+			},
+			{
+				"name": "DayNameWeek",
+				"type": "nvarchar"
+			},
+			{
+				"name": "DayNbMonth",
+				"type": "tinyint",
+				"precision": 3
+			},
+			{
+				"name": "DayNbYear",
+				"type": "smallint",
+				"precision": 5
+			},
+			{
+				"name": "WeekNbYear",
+				"type": "tinyint",
+				"precision": 3
+			},
+			{
+				"name": "MonthNumber",
+				"type": "tinyint",
+				"precision": 3
+			},
+			{
+				"name": "MonthName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Quarter",
+				"type": "tinyint",
+				"precision": 3
+			},
+			{
+				"name": "Semester",
+				"type": "tinyint",
+				"precision": 3
+			},
+			{
+				"name": "Year",
+				"type": "smallint",
+				"precision": 5
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Time"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

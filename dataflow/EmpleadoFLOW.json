@@ -1,0 +1,93 @@
+{
+	"name": "EmpleadoFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmpleadoORG",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenEMP"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "EmpleadoDST",
+						"type": "DatasetReference"
+					},
+					"name": "DestinoEMP"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          EmployeeID as integer,",
+				"          LastName as string,",
+				"          FirstName as string,",
+				"          Title as string,",
+				"          TitleOfCourtesy as string,",
+				"          BirthDate as timestamp,",
+				"          HireDate as timestamp,",
+				"          Address as string,",
+				"          City as string,",
+				"          Region as string,",
+				"          PostalCode as string,",
+				"          Country as string,",
+				"          HomePhone as string,",
+				"          Extension as string,",
+				"          Photo as binary,",
+				"          Notes as string,",
+				"          ReportsTo as integer,",
+				"          PhotoPath as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OrigenEMP",
+				"OrigenEMP sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          EmployeeKey as integer,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Title as string,",
+				"          TitleOfCourtesy as string,",
+				"          BirthDate as date,",
+				"          HireDate as date,",
+				"          Address as string,",
+				"          City as string,",
+				"          Region as string,",
+				"          PostalCode as string,",
+				"          Country as string,",
+				"          SupervisorKey as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          EmployeeKey = EmployeeID,",
+				"          FirstName,",
+				"          LastName,",
+				"          Title,",
+				"          TitleOfCourtesy,",
+				"          BirthDate,",
+				"          HireDate,",
+				"          Address,",
+				"          City,",
+				"          Region,",
+				"          PostalCode,",
+				"          Country,",
+				"          SupervisorKey = ReportsTo",
+				"     )) ~> DestinoEMP"
+			]
+		}
+	}
+}

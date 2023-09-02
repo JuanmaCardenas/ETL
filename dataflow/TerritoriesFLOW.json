@@ -1,0 +1,150 @@
+{
+	"name": "TerritoriesFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TerritoriesORG",
+						"type": "DatasetReference"
+					},
+					"name": "Territories"
+				},
+				{
+					"dataset": {
+						"referenceName": "EmployeeTerritories",
+						"type": "DatasetReference"
+					},
+					"name": "EmployeeTerritories"
+				},
+				{
+					"dataset": {
+						"referenceName": "CiudadesDST",
+						"type": "DatasetReference"
+					},
+					"name": "Ciudades"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TerritorioDST",
+						"type": "DatasetReference"
+					},
+					"name": "DestinoTerritorio"
+				},
+				{
+					"dataset": {
+						"referenceName": "SalidaCSV",
+						"type": "DatasetReference"
+					},
+					"name": "CSV"
+				}
+			],
+			"transformations": [
+				{
+					"name": "TerritoryID"
+				},
+				{
+					"name": "TerritoryID1"
+				},
+				{
+					"name": "InnerJoin"
+				},
+				{
+					"name": "EmployeeIDTerritoryDesc"
+				},
+				{
+					"name": "EliminarEspacios"
+				},
+				{
+					"name": "BusquedaCiudad"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "EmployeeID"
+				},
+				{
+					"name": "EliminarDuplicadas"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TerritoryID as string,",
+				"          TerritoryDescription as string,",
+				"          RegionID as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Territories",
+				"source(output(",
+				"          EmployeeID as integer,",
+				"          TerritoryID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> EmployeeTerritories",
+				"source(output(",
+				"          CityKey as integer,",
+				"          CityName as string,",
+				"          StateKey as integer,",
+				"          CountryKey as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Ciudades",
+				"Territories sort(asc(TerritoryID, true)) ~> TerritoryID",
+				"EmployeeTerritories sort(asc(TerritoryID, true)) ~> TerritoryID1",
+				"TerritoryID, TerritoryID1 join(Territories@TerritoryID == EmployeeTerritories@TerritoryID,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> InnerJoin",
+				"InnerJoin select(mapColumn(",
+				"          TerritoryDescription,",
+				"          EmployeeID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> EmployeeIDTerritoryDesc",
+				"EmployeeIDTerritoryDesc derive(TerritoryDescription = trim(TerritoryDescription)) ~> EliminarEspacios",
+				"EliminarEspacios, Ciudades lookup(TerritoryDescription == CityName,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> BusquedaCiudad",
+				"BusquedaCiudad split(!isNull(CityName) && CityName != \"\",",
+				"     disjoint: false) ~> split1@(Existe, NoExiste)",
+				"split1@Existe sort(asc(EmployeeID, true)) ~> EmployeeID",
+				"EmployeeID aggregate(groupBy(EmployeeID),",
+				"     each(match(name!='EmployeeID'), $$ = first($$))) ~> EliminarDuplicadas",
+				"EliminarDuplicadas sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          EmployeeKey as integer,",
+				"          CityKey as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          EmployeeKey = EmployeeID,",
+				"          CityKey",
+				"     )) ~> DestinoTerritorio",
+				"split1@NoExiste sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> CSV"
+			]
+		}
+	}
+}

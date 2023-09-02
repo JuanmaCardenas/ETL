@@ -1,0 +1,208 @@
+{
+	"name": "CiudadesFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "CiudadesTEMP",
+						"type": "DatasetReference"
+					},
+					"name": "TempCities"
+				},
+				{
+					"dataset": {
+						"referenceName": "EstadosDST",
+						"type": "DatasetReference"
+					},
+					"name": "Estados"
+				},
+				{
+					"dataset": {
+						"referenceName": "PaisesDST",
+						"type": "DatasetReference"
+					},
+					"name": "Paises"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "CiudadesDST",
+						"type": "DatasetReference"
+					},
+					"name": "Ciudades"
+				},
+				{
+					"dataset": {
+						"referenceName": "SalidaCSV",
+						"type": "DatasetReference"
+					},
+					"name": "CSV"
+				}
+			],
+			"transformations": [
+				{
+					"name": "EstadosPaises"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "SeleccionamosAtributos"
+				},
+				{
+					"name": "PaisNombre"
+				},
+				{
+					"name": "StateNameCountryName"
+				},
+				{
+					"name": "split2"
+				},
+				{
+					"name": "EnglishCountryName"
+				},
+				{
+					"name": "Atributos"
+				},
+				{
+					"name": "split3"
+				},
+				{
+					"name": "Atributos1"
+				},
+				{
+					"name": "StateNameCode"
+				},
+				{
+					"name": "split4"
+				},
+				{
+					"name": "UnionTodas"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          City as string,",
+				"          State as string,",
+				"          Country as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> TempCities",
+				"source(output(",
+				"          StateKey as integer,",
+				"          StateName as string,",
+				"          EnglishStateName as string,",
+				"          StateType as string,",
+				"          StateCode as string,",
+				"          StateCapital as string,",
+				"          RegionName as string,",
+				"          RegionCode as string,",
+				"          CountryKey as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Estados",
+				"source(output(",
+				"          CountryKey as integer,",
+				"          CountryName as string,",
+				"          CountryCode as string,",
+				"          CountryCapital as string,",
+				"          Population as integer,",
+				"          Subdivision as string,",
+				"          ContinentKey as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Paises",
+				"Estados, Paises lookup(Estados@CountryKey == Paises@CountryKey,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> EstadosPaises",
+				"TempCities split(isNull(State) || State == \"\",",
+				"     disjoint: false) ~> split1@(SinEstado, ConEstado)",
+				"EstadosPaises select(mapColumn(",
+				"          StateKey,",
+				"          StateName,",
+				"          EnglishStateName,",
+				"          CountryKey = Paises@CountryKey,",
+				"          CountryName,",
+				"          CountryCode",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SeleccionamosAtributos",
+				"split1@SinEstado, SeleccionamosAtributos lookup(Country == CountryName,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> PaisNombre",
+				"split1@ConEstado, SeleccionamosAtributos lookup(State == StateName",
+				"     && Country == CountryName,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> StateNameCountryName",
+				"StateNameCountryName split(!isNull(StateName) && StateName != \"\" && !isNull(CountryName) && CountryName != \"\",",
+				"     disjoint: false) ~> split2@(Coincide, NoCoincide)",
+				"Atributos, SeleccionamosAtributos lookup(State == EnglishStateName",
+				"     && Country == CountryName,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> EnglishCountryName",
+				"split2@NoCoincide select(mapColumn(",
+				"          City,",
+				"          State,",
+				"          Country",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> Atributos",
+				"EnglishCountryName split(!isNull(EnglishStateName) && EnglishStateName != \"\" && !isNull(CountryName) && CountryName != \"\",",
+				"     disjoint: false) ~> split3@(Existe, NoExiste)",
+				"split3@NoExiste select(mapColumn(",
+				"          City,",
+				"          State,",
+				"          Country",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> Atributos1",
+				"Atributos1, SeleccionamosAtributos lookup(State == StateName",
+				"     && Country == CountryCode,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> StateNameCode",
+				"StateNameCode split(!isNull(StateName) && StateName != \"\" && !isNull(CountryCode) && CountryCode != \"\",",
+				"     disjoint: false) ~> split4@(Sirve, NoSirve)",
+				"PaisNombre, split2@Coincide, split3@Existe, split4@Sirve union(byName: true)~> UnionTodas",
+				"UnionTodas sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          CityKey as integer,",
+				"          CityName as string,",
+				"          StateKey as integer,",
+				"          CountryKey as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CityName = City,",
+				"          StateKey,",
+				"          CountryKey",
+				"     )) ~> Ciudades",
+				"split4@NoSirve sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> CSV"
+			]
+		}
+	}
+}

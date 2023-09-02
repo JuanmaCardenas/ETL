@@ -1,0 +1,96 @@
+{
+	"name": "ClienteFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ClienteORG",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenCLI"
+				},
+				{
+					"dataset": {
+						"referenceName": "CiudadesDST",
+						"type": "DatasetReference"
+					},
+					"name": "Ciudades"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ClienteDST",
+						"type": "DatasetReference"
+					},
+					"name": "DestinoCLI"
+				}
+			],
+			"transformations": [
+				{
+					"name": "BusquedaCityKey"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          CustomerID as string,",
+				"          CompanyName as string,",
+				"          ContactName as string,",
+				"          ContactTitle as string,",
+				"          Address as string,",
+				"          City as string,",
+				"          Region as string,",
+				"          PostalCode as string,",
+				"          Country as string,",
+				"          Phone as string,",
+				"          Fax as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OrigenCLI",
+				"source(output(",
+				"          CityKey as integer,",
+				"          CityName as string,",
+				"          StateKey as integer,",
+				"          CountryKey as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Ciudades",
+				"OrigenCLI, Ciudades lookup(City == CityName,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> BusquedaCityKey",
+				"BusquedaCityKey sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          CustomerKey as integer,",
+				"          CustomerID as string,",
+				"          CompanyName as string,",
+				"          Address as string,",
+				"          PostalCode as string,",
+				"          CityKey as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CustomerID,",
+				"          CompanyName,",
+				"          Address,",
+				"          PostalCode,",
+				"          CityKey",
+				"     )) ~> DestinoCLI"
+			]
+		}
+	}
+}

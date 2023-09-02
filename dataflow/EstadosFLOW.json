@@ -1,0 +1,118 @@
+{
+	"name": "EstadosFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Territories",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenEST"
+				},
+				{
+					"dataset": {
+						"referenceName": "PaisesORG",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenPais"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "EstadosDST",
+						"type": "DatasetReference"
+					},
+					"name": "DestinoEST"
+				}
+			],
+			"transformations": [
+				{
+					"name": "acoplar"
+				},
+				{
+					"name": "busqueda"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Continents as (Continent as (ContinentName as string, Country as (CountryCapital as string, CountryCode as string, CountryName as string, Population as integer, State as ({@type} as string, EnglishRegionName as string, EnglishStateName as string, RegionCode as string, RegionName as string, StateCapital as string, StateCode as string, StateName as string)[], Subdivision as string)[])[])",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     validationMode: 'xsd',",
+				"     namespaces: true) ~> OrigenEST",
+				"source(output(",
+				"          CountryKey as integer,",
+				"          CountryName as string,",
+				"          CountryCode as string,",
+				"          CountryCapital as string,",
+				"          Population as integer,",
+				"          Subdivision as string,",
+				"          ContinentKey as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OrigenPais",
+				"OrigenEST foldDown(unroll(Continents.Continent.Country.State),",
+				"     mapColumn(",
+				"          CountryName = Continents.Continent.Country.CountryName,",
+				"          StateType = Continents.Continent.Country.State.{@type},",
+				"          EnglishRegionName = Continents.Continent.Country.State.EnglishRegionName,",
+				"          EnglishStateName = Continents.Continent.Country.State.EnglishStateName,",
+				"          RegionCode = Continents.Continent.Country.State.RegionCode,",
+				"          RegionName = Continents.Continent.Country.State.RegionName,",
+				"          StateCapital = Continents.Continent.Country.State.StateCapital,",
+				"          StateCode = Continents.Continent.Country.State.StateCode,",
+				"          StateName = Continents.Continent.Country.State.StateName",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> acoplar",
+				"acoplar, OrigenPais lookup(acoplar@CountryName == OrigenPais@CountryName,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> busqueda",
+				"busqueda derive(StateName = iif(isNull(StateName), \"\", StateName),",
+				"          StateType = iif(isNull(StateType), \"\", StateType)) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          StateKey as integer,",
+				"          StateName as string,",
+				"          EnglishStateName as string,",
+				"          StateType as string,",
+				"          StateCode as string,",
+				"          StateCapital as string,",
+				"          RegionName as string,",
+				"          RegionCode as string,",
+				"          CountryKey as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          StateName,",
+				"          EnglishStateName,",
+				"          StateType,",
+				"          StateCode,",
+				"          StateCapital,",
+				"          RegionName,",
+				"          RegionCode,",
+				"          CountryKey",
+				"     )) ~> DestinoEST"
+			]
+		}
+	}
+}

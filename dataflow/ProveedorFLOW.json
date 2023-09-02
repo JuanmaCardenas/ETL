@@ -1,0 +1,96 @@
+{
+	"name": "ProveedorFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ProveedorORG",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenPRO"
+				},
+				{
+					"dataset": {
+						"referenceName": "CiudadesDST",
+						"type": "DatasetReference"
+					},
+					"name": "Ciudades"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ProveedorDST",
+						"type": "DatasetReference"
+					},
+					"name": "DestinoPRO"
+				}
+			],
+			"transformations": [
+				{
+					"name": "BusquedaCityKey"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          SupplierID as integer,",
+				"          CompanyName as string,",
+				"          ContactName as string,",
+				"          ContactTitle as string,",
+				"          Address as string,",
+				"          City as string,",
+				"          Region as string,",
+				"          PostalCode as string,",
+				"          Country as string,",
+				"          Phone as string,",
+				"          Fax as string,",
+				"          HomePage as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OrigenPRO",
+				"source(output(",
+				"          CityKey as integer,",
+				"          CityName as string,",
+				"          StateKey as integer,",
+				"          CountryKey as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Ciudades",
+				"OrigenPRO, Ciudades lookup(City == CityName,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> BusquedaCityKey",
+				"BusquedaCityKey sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          SupplierKey as integer,",
+				"          CompanyName as string,",
+				"          Address as string,",
+				"          PostalCode as string,",
+				"          CityKey as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          SupplierKey = SupplierID,",
+				"          CompanyName,",
+				"          Address,",
+				"          PostalCode,",
+				"          CityKey",
+				"     )) ~> DestinoPRO"
+			]
+		}
+	}
+}

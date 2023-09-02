@@ -1,0 +1,96 @@
+{
+	"name": "VentasDST",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "NorthwindDW",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "CustomerKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "EmployeeKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "OrderDateKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DueDateKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ShippedDateKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ShipperKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ProductKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SupplierKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "OrderNo",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "OrderLineNo",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "UnitPrice",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "Quantity",
+				"type": "smallint",
+				"precision": 5
+			},
+			{
+				"name": "Discount",
+				"type": "real",
+				"precision": 7
+			},
+			{
+				"name": "SalesAmount",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			},
+			{
+				"name": "Freight",
+				"type": "money",
+				"precision": 19,
+				"scale": 4
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Sales"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

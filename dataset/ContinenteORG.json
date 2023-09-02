@@ -1,0 +1,27 @@
+{
+	"name": "ContinenteORG",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "NorthwindDW",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ContinentKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ContinentName",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Continent"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

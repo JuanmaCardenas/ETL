@@ -1,0 +1,101 @@
+{
+	"name": "PaisesFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Territories",
+						"type": "DatasetReference"
+					},
+					"name": "PaisesORG"
+				},
+				{
+					"dataset": {
+						"referenceName": "ContinenteORG",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenCONT"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "PaisesDST",
+						"type": "DatasetReference"
+					},
+					"name": "PaisesDST"
+				}
+			],
+			"transformations": [
+				{
+					"name": "acoplar"
+				},
+				{
+					"name": "busqueda"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Continents as (Continent as (ContinentName as string, Country as (CountryCapital as string, CountryCode as string, CountryName as string, Population as integer, State as ({@type} as string, EnglishRegionName as string, EnglishStateName as string, RegionCode as string, RegionName as string, StateCapital as string, StateCode as string, StateName as string)[], Subdivision as string)[])[])",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     validationMode: 'xsd',",
+				"     namespaces: true) ~> PaisesORG",
+				"source(output(",
+				"          ContinentKey as integer,",
+				"          ContinentName as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OrigenCONT",
+				"PaisesORG foldDown(unroll(Continents.Continent.Country),",
+				"     mapColumn(",
+				"          ContinentName = Continents.Continent.ContinentName,",
+				"          CountryCapital = Continents.Continent.Country.CountryCapital,",
+				"          CountryCode = Continents.Continent.Country.CountryCode,",
+				"          CountryName = Continents.Continent.Country.CountryName,",
+				"          Population = Continents.Continent.Country.Population,",
+				"          Subdivision = Continents.Continent.Country.Subdivision",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> acoplar",
+				"acoplar, OrigenCONT lookup(acoplar@ContinentName == OrigenCONT@ContinentName,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> busqueda",
+				"busqueda sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          CountryKey as integer,",
+				"          CountryName as string,",
+				"          CountryCode as string,",
+				"          CountryCapital as string,",
+				"          Population as integer,",
+				"          Subdivision as string,",
+				"          ContinentKey as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CountryName,",
+				"          CountryCode,",
+				"          CountryCapital,",
+				"          Population,",
+				"          Subdivision,",
+				"          ContinentKey",
+				"     )) ~> PaisesDST"
+			]
+		}
+	}
+}

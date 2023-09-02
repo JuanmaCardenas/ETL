@@ -1,0 +1,346 @@
+{
+	"name": "VentasFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "VentasORG",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenVentas"
+				},
+				{
+					"dataset": {
+						"referenceName": "ProductosORG",
+						"type": "DatasetReference"
+					},
+					"name": "Product"
+				},
+				{
+					"dataset": {
+						"referenceName": "TiempoDST",
+						"type": "DatasetReference"
+					},
+					"name": "Tiempo"
+				},
+				{
+					"dataset": {
+						"referenceName": "VentasSpec",
+						"type": "DatasetReference"
+					},
+					"name": "SalesDetails"
+				},
+				{
+					"dataset": {
+						"referenceName": "ClienteDST",
+						"type": "DatasetReference"
+					},
+					"name": "Clientes"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "VentasDST",
+						"type": "DatasetReference"
+					},
+					"name": "Sales"
+				}
+			],
+			"transformations": [
+				{
+					"name": "DetallesProductos"
+				},
+				{
+					"name": "cast1"
+				},
+				{
+					"name": "OrderDate"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "RequiredDate"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "ShippedDate"
+				},
+				{
+					"name": "select3"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "select4"
+				},
+				{
+					"name": "BusquedaClientes"
+				},
+				{
+					"name": "select5"
+				},
+				{
+					"name": "SalesAmount"
+				},
+				{
+					"name": "OrderLineNo"
+				},
+				{
+					"name": "split1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          OrderID as integer,",
+				"          CustomerID as string,",
+				"          EmployeeID as integer,",
+				"          OrderDate as timestamp,",
+				"          RequiredDate as timestamp,",
+				"          ShippedDate as timestamp,",
+				"          ShipVia as integer,",
+				"          Freight as decimal(19,4),",
+				"          ShipName as string,",
+				"          ShipAddress as string,",
+				"          ShipCity as string,",
+				"          ShipRegion as string,",
+				"          ShipPostalCode as string,",
+				"          ShipCountry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OrigenVentas",
+				"source(output(",
+				"          ProductID as integer,",
+				"          ProductName as string,",
+				"          SupplierID as integer,",
+				"          CategoryID as integer,",
+				"          QuantityPerUnit as string,",
+				"          UnitPrice as decimal(19,4),",
+				"          UnitsInStock as integer,",
+				"          UnitsOnOrder as integer,",
+				"          ReorderLevel as integer,",
+				"          Discontinued as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Product",
+				"source(output(",
+				"          TimeKey as integer,",
+				"          Date as date,",
+				"          DayNbWeek as integer,",
+				"          DayNameWeek as string,",
+				"          DayNbMonth as integer,",
+				"          DayNbYear as integer,",
+				"          WeekNbYear as integer,",
+				"          MonthNumber as integer,",
+				"          MonthName as string,",
+				"          Quarter as integer,",
+				"          Semester as integer,",
+				"          Year as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Tiempo",
+				"source(output(",
+				"          OrderID as integer,",
+				"          ProductID as integer,",
+				"          UnitPrice as decimal(19,4),",
+				"          Quantity as integer,",
+				"          Discount as float",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> SalesDetails",
+				"source(output(",
+				"          CustomerKey as integer,",
+				"          CustomerID as string,",
+				"          CompanyName as string,",
+				"          Address as string,",
+				"          PostalCode as string,",
+				"          CityKey as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Clientes",
+				"SalesDetails, Product join(SalesDetails@ProductID == Product@ProductID,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> DetallesProductos",
+				"OrigenVentas cast(output(",
+				"          OrderDate as date,",
+				"          RequiredDate as date,",
+				"          ShippedDate as date",
+				"     ),",
+				"     errors: true) ~> cast1",
+				"cast1, Tiempo lookup(OrderDate == Date,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> OrderDate",
+				"OrderDate select(mapColumn(",
+				"          OrderID,",
+				"          CustomerID,",
+				"          EmployeeID,",
+				"          RequiredDate,",
+				"          ShippedDate,",
+				"          ShipVia,",
+				"          Freight,",
+				"          ShipName,",
+				"          ShipAddress,",
+				"          ShipCity,",
+				"          ShipRegion,",
+				"          ShipPostalCode,",
+				"          ShipCountry,",
+				"          OrderDateKey = TimeKey",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1, Tiempo lookup(RequiredDate == Date,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> RequiredDate",
+				"RequiredDate select(mapColumn(",
+				"          OrderID,",
+				"          CustomerID,",
+				"          EmployeeID,",
+				"          ShippedDate,",
+				"          ShipVia,",
+				"          Freight,",
+				"          ShipName,",
+				"          ShipAddress,",
+				"          ShipCity,",
+				"          ShipRegion,",
+				"          ShipPostalCode,",
+				"          ShipCountry,",
+				"          OrderDateKey,",
+				"          RequiredDateKey = TimeKey",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select2, Tiempo lookup(ShippedDate == Date,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> ShippedDate",
+				"ShippedDate select(mapColumn(",
+				"          OrderID,",
+				"          CustomerID,",
+				"          EmployeeID,",
+				"          ShipVia,",
+				"          Freight,",
+				"          OrderDateKey,",
+				"          RequiredDateKey,",
+				"          ShippedDateKey = TimeKey",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select3",
+				"select3, DetallesProductos join(select3@OrderID == SalesDetails@OrderID,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2 select(mapColumn(",
+				"          OrderID = select3@OrderID,",
+				"          CustomerID,",
+				"          EmployeeID,",
+				"          ShipVia,",
+				"          Freight,",
+				"          OrderDateKey,",
+				"          RequiredDateKey,",
+				"          ShippedDateKey,",
+				"          OrderID = SalesDetails@OrderID,",
+				"          ProductID = SalesDetails@ProductID,",
+				"          UnitPrice = SalesDetails@UnitPrice,",
+				"          Quantity,",
+				"          Discount,",
+				"          SupplierID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select4",
+				"select4, Clientes lookup(select4@CustomerID == Clientes@CustomerID,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> BusquedaClientes",
+				"BusquedaClientes select(mapColumn(",
+				"          OrderID,",
+				"          EmployeeID,",
+				"          ShipVia,",
+				"          Freight,",
+				"          OrderDateKey,",
+				"          RequiredDateKey,",
+				"          ShippedDateKey,",
+				"          ProductID,",
+				"          UnitPrice,",
+				"          Quantity,",
+				"          Discount,",
+				"          SupplierID,",
+				"          CustomerKey,",
+				"          ShipVia",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select5",
+				"select5 derive(SalesAmount = UnitPrice*Quantity*(1-Discount)) ~> SalesAmount",
+				"split1@Existe window(over(OrderID),",
+				"     asc(OrderID, true),",
+				"     OrderLineNo = rowNumber()) ~> OrderLineNo",
+				"SalesAmount split(!isNull(ShippedDateKey),",
+				"     disjoint: false) ~> split1@(Existe, NoExiste)",
+				"OrderLineNo sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          CustomerKey as integer,",
+				"          EmployeeKey as integer,",
+				"          OrderDateKey as integer,",
+				"          DueDateKey as integer,",
+				"          ShippedDateKey as integer,",
+				"          ShipperKey as integer,",
+				"          ProductKey as integer,",
+				"          SupplierKey as integer,",
+				"          OrderNo as integer,",
+				"          OrderLineNo as integer,",
+				"          UnitPrice as decimal(19,4),",
+				"          Quantity as integer,",
+				"          Discount as float,",
+				"          SalesAmount as decimal(19,4),",
+				"          Freight as decimal(19,4)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CustomerKey,",
+				"          EmployeeKey = EmployeeID,",
+				"          OrderDateKey,",
+				"          DueDateKey = RequiredDateKey,",
+				"          ShippedDateKey,",
+				"          ShipperKey = ShipVia,",
+				"          ProductKey = ProductID,",
+				"          SupplierKey = SupplierID,",
+				"          OrderNo = OrderID,",
+				"          OrderLineNo,",
+				"          UnitPrice,",
+				"          Quantity,",
+				"          Discount,",
+				"          SalesAmount,",
+				"          Freight",
+				"     )) ~> Sales"
+			]
+		}
+	}
+}

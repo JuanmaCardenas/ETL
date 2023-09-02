@@ -1,0 +1,57 @@
+{
+	"name": "TempFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Cities",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenCIU"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "CiudadesTEMP",
+						"type": "DatasetReference"
+					},
+					"name": "DestinoCIU"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          City as string,",
+				"          State as string,",
+				"          Country as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> OrigenCIU",
+				"OrigenCIU sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          City as string,",
+				"          State as string,",
+				"          Country as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          City,",
+				"          State,",
+				"          Country",
+				"     )) ~> DestinoCIU"
+			]
+		}
+	}
+}

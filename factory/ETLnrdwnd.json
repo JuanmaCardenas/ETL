@@ -1,0 +1,9 @@
+{
+	"name": "ETLnrdwnd",
+	"location": "westeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "682995ee-bc4c-4e35-8f72-b19d5973dd4c",
+		"tenantId": "e7f53f3f-636b-43ad-807e-57c966ff7db8"
+	}
+}

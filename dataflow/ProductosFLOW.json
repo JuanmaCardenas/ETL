@@ -1,0 +1,71 @@
+{
+	"name": "ProductosFLOW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ProductosORG",
+						"type": "DatasetReference"
+					},
+					"name": "OrigenPRD"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ProductosDST",
+						"type": "DatasetReference"
+					},
+					"name": "DestinoPRD"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          ProductID as integer,",
+				"          ProductName as string,",
+				"          SupplierID as integer,",
+				"          CategoryID as integer,",
+				"          QuantityPerUnit as string,",
+				"          UnitPrice as decimal(19,4),",
+				"          UnitsInStock as integer,",
+				"          UnitsOnOrder as integer,",
+				"          ReorderLevel as integer,",
+				"          Discontinued as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OrigenPRD",
+				"OrigenPRD sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ProductKey as integer,",
+				"          ProductName as string,",
+				"          QuantityPerUnit as string,",
+				"          UnitPrice as decimal(19,4),",
+				"          Discontinued as boolean,",
+				"          CategoryKey as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ProductKey = ProductID,",
+				"          ProductName,",
+				"          QuantityPerUnit,",
+				"          UnitPrice,",
+				"          Discontinued,",
+				"          CategoryKey = CategoryID",
+				"     )) ~> DestinoPRD"
+			]
+		}
+	}
+}

@@ -1,0 +1,56 @@
+{
+	"name": "EstadosDST",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "NorthwindDW",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "StateKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "StateName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "EnglishStateName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "StateType",
+				"type": "nvarchar"
+			},
+			{
+				"name": "StateCode",
+				"type": "nvarchar"
+			},
+			{
+				"name": "StateCapital",
+				"type": "nvarchar"
+			},
+			{
+				"name": "RegionName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "RegionCode",
+				"type": "nvarchar"
+			},
+			{
+				"name": "CountryKey",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "State"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
